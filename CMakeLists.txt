@@ -34,6 +34,17 @@ set(headers ${PROJECT_SOURCE_DIR}/src/clist_ts.h
             ${PROJECT_SOURCE_DIR}/src/portable_thread.h)
 install(FILES ${headers} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
+#Setting pkgconfig file file variables
+set(prefix ${CMAKE_INSTALL_PREFIX})
+set(exec_prefix ${CMAKE_INSTALL_BINDIR})
+set(libdir ${CMAKE_INSTALL_LIBDIR})
+set(includedir ${CMAKE_INSTALL_INCLUDEDIR})
+
+if(NOT WIN32)
+  #Create pkgconfig file
+  configure_file(cutils.pc.in cutils.pc @ONLY) 
+  install(FILES ${PROJECT_BINARY_DIR}/cutils.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+endif()
 
 # aux_source_directory(samples log_src)
 add_executable(logging samples/logging.c)
