@@ -41,6 +41,8 @@ set(libdir ${CMAKE_INSTALL_LIBDIR})
 set(includedir ${CMAKE_INSTALL_INCLUDEDIR})
 
 if(NOT WIN32)
+  target_compile_options(cutils PRIVATE "SHELL: -fPIC")
+
   #Create pkgconfig file
   configure_file(cutils.pc.in cutils.pc @ONLY) 
   install(FILES ${PROJECT_BINARY_DIR}/cutils.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
