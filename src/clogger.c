@@ -1,14 +1,8 @@
 #include "clogger.h"
 #include "portable_thread.h"
-
+#include "portable_io.h"
+#include "portable_time.h"
 #include <stdarg.h>
-
-#if defined(_WIN32) || defined(_WIN64)
-#else
-#   include <sys/time.h>
-#endif 
-
-#include <stdio.h>
 
 const char * UNKNOWN_C_LEVEL = "UNKN ";
 const char * C_LEVEL_STRING[] = {
@@ -50,10 +44,19 @@ static P_MUTEX_TYPE logger_lock = P_MUTEX_INITIALIZER;
 //Global properties protected by lock
 static CLevel C_LEVEL_SET = C_TRACE_E;
 static int wait_fmt_val = 0; //fmt indicator that % was crossed
-static char fmt_buff[30]; //fmt buff while parsing arguments
 static struct tm calendar; //Calendar pointer used to convert number to string
-static char strlvl[27];
-static char strtime[32];
+static char fmt_buff[30]; //fmt buff while parsing arguments
+
+/*
+* On windows it doesn't need extra padding for ANSI colors
+*/
+#if defined(_WIN32) || defined(_WIN64)
+#   define LOG_MAX_LVL_LEN 6
+#else
+#   define LOG_MAX_LVL_LEN 27
+#endif
+static char strlvl[LOG_MAX_LVL_LEN];
+static char strtime[255];
 static long threadID;
 static va_list carg;
 static long data_written = 0;
@@ -80,19 +83,23 @@ static const char * c_level_get_color(CLevel level){
 
 static void c_level_with_color(CLevel lvl, char * output){
     const char * strlvl = c_level_to_string(lvl);
-    const char * strcolor = c_level_get_color(lvl);
-    sprintf(output, "%s%s%s", strcolor,strlvl,ANSI_COLOR_RESET);
+    #if defined(_WIN32) || defined(_WIN64)
+        sprintf_s(output, LOG_MAX_LVL_LEN, strlvl);
+    #else 
+        const char * strcolor = c_level_get_color(lvl);
+        sprintf(output, "%s%s%s", strcolor,strlvl,ANSI_COLOR_RESET);
+    #endif
 }
 
-static void time_to_string(const struct timeval* time, char* timestamp, size_t size){
+static void time_to_string(struct timeval* time, char* timestamp, size_t size){
     if(size < 25){
         printf("Logger error, invalid time size...\n");
         return;
     }
 
-    localtime_r(&(time->tv_sec), &calendar);
+    localtime_p(time->tv_sec, &calendar);
     strftime(timestamp, size, LOG_TIME_FMT, &calendar);
-    sprintf(&timestamp[17], LOG_UTIME_FMT, (long) time->tv_usec);
+    sprintf_s(&timestamp[17], 17, LOG_UTIME_FMT, (long) time->tv_usec);
 }
 
 static int is_specifier(char * c){
@@ -125,7 +132,8 @@ static void c_priv_log_string(FILE* fp, char * strlvl, const char* timestamp,
         return;
     }
 
-    for(int i=0;i<strlen(str_arg);i++){
+    int arg_len=strlen(str_arg);
+    for(int i=0;i<=arg_len;i++){
         //Print character
         if ((*size = fputc(str_arg[i],fp)) > 0) *totalsize += *size;
 
@@ -137,7 +145,8 @@ static void c_priv_log_string(FILE* fp, char * strlvl, const char* timestamp,
 static void c_priv_log_line(FILE* fp, char * strlvl, const char* timestamp, 
         long threadID, const char* file, int line, char* log_line, va_list arg, int * size, long * totalsize){
 
-    for(int i=0;i<=strlen(log_line);i++){
+    int line_len = strlen(log_line);
+    for(int i=0;i<=line_len;i++){
         if(wait_fmt_val){
             fmt_buff[wait_fmt_val]=log_line[i];
             if(is_specifier(&(log_line[i]))){
@@ -172,8 +181,8 @@ static void c_priv_log(FILE* fp, char * strlvl, const char* timestamp,
     LOG_TMP_SIZE = 0;
 
     //Properly drop const
-    char cfmt[strlen(fmt)+1];
-    strcpy(cfmt,fmt);
+    char * cfmt = malloc(strlen(fmt)+1);
+    strcpy_s(cfmt,strlen(fmt)+1,fmt);
 
     //Break down log by line to insert prefix
     char * tok = strtok_r(cfmt, LOG_NEWLINE_STR, &LOG_TOK_PTR);
@@ -189,12 +198,14 @@ static void c_priv_log(FILE* fp, char * strlvl, const char* timestamp,
 
         tok = strtok_r(NULL, LOG_NEWLINE_STR, &LOG_TOK_PTR);
     }
+
+    free(cfmt);
 }
 
 void c_log(CLevel level, const char* file, int line, const char* fmt, ...){
     //Defining now locally so that it grabs the time before the lock
     struct timeval now;
-    
+
     // c_log_set_level(C_WARN_E);
     if(level > C_LEVEL_SET) return;
     
@@ -206,7 +217,7 @@ void c_log(CLevel level, const char* file, int line, const char* fmt, ...){
 
     va_start(carg, fmt);
     P_MUTEX_LOCK(logger_lock);
-    flockfile(stdout);
+    P_LOCK_FILE(stdout);
 
     //Convert time ulong to char*
     time_to_string(&now, strtime, sizeof(strtime));
@@ -217,7 +228,8 @@ void c_log(CLevel level, const char* file, int line, const char* fmt, ...){
     //TODO Support file rotate
     c_priv_log(stdout , strlvl, strtime, threadID, file, line, fmt, carg, &data_written);
 
-    funlockfile(stdout);
+    // Unlock the file.
+    P_UNLOCK_FILE(stdout);
     P_MUTEX_UNLOCK(logger_lock);
     va_end(carg);
 }
