@@ -10,7 +10,7 @@ CObject * priv_CListTS__get(CListTS * self, int index);
 
 void priv_CListTS__remove_element_and_shift(CListTS* self, CObject **array, int index, int array_length){
     int i;
-    for(i = index; i < array_length; i++) {
+    for(i = index; i < array_length-1; i++) {
         array[i] = array[i + 1];
     }
 };
@@ -35,12 +35,17 @@ void priv_CListTS__remove(CListTS* self, int index){
 }
 
 CObject * priv_CListTS__get(CListTS * self, int index){
+    if(index >= self->count){
+        C_ERROR("Index out of bounds [%d]",index);
+        return NULL;
+    }
     return self->data[index];
 }
 
 CListTS * CListTS__create(){
     CListTS * list = malloc(sizeof(CListTS));
     CListTS__init(list);
+    CObject__set_allocated((CObject*)list);
     return list;
 }
 

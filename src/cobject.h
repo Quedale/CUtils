@@ -20,6 +20,7 @@ int CObject__addref(CObject* device);
 void CObject__unref(CObject* device); 
 int CObject__is_valid(CObject* device);
 int CObject__ref_count(CObject *self);
+void CObject__set_allocated(CObject * self);
 void CObject__set_destroy_callback(CObject* self, void (*destroy_callback)(CObject *)); 
 
 #endif

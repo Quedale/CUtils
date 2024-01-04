@@ -182,7 +182,7 @@ static void c_priv_log(FILE* fp, char * strlvl, const char* timestamp,
 
     //Properly drop const
     char * cfmt = malloc(strlen(fmt)+1);
-    strcpy_s(cfmt,strlen(fmt)+1,fmt);
+    strcpy_s(cfmt,sizeof(fmt),fmt);
 
     //Break down log by line to insert prefix
     char * tok = strtok_r(cfmt, LOG_NEWLINE_STR, &LOG_TOK_PTR);
@@ -209,6 +209,9 @@ void c_log(CLevel level, const char* file, int line, const char* fmt, ...){
     // c_log_set_level(C_WARN_E);
     if(level > C_LEVEL_SET) return;
     
+    P_MUTEX_LOCK(logger_lock);
+    P_LOCK_FILE(stdout);
+
     //Get level string constant
     c_level_with_color(level,strlvl);
 
@@ -216,9 +219,6 @@ void c_log(CLevel level, const char* file, int line, const char* fmt, ...){
     gettimeofday(&now, NULL);
 
     va_start(carg, fmt);
-    P_MUTEX_LOCK(logger_lock);
-    P_LOCK_FILE(stdout);
-
     //Convert time ulong to char*
     time_to_string(&now, strtime, sizeof(strtime));
 
@@ -228,8 +228,8 @@ void c_log(CLevel level, const char* file, int line, const char* fmt, ...){
     //TODO Support file rotate
     c_priv_log(stdout , strlvl, strtime, threadID, file, line, fmt, carg, &data_written);
 
+    va_end(carg);
     // Unlock the file.
     P_UNLOCK_FILE(stdout);
     P_MUTEX_UNLOCK(logger_lock);
-    va_end(carg);
 }

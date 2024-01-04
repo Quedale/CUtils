@@ -68,8 +68,8 @@ POP_WARNING_IGNORE(NULL)
 #elif defined(_POSIX_THREADS) || defined(_SC_THREADS)
 #   define P_THREAD_TYPE	pthread_t
 #   define P_THREAD_ID		pthread_self()
-#   define P_THREAD_CREATE(x,y,z)       pthread_create((x), NULL, (y), (z))
-#   define P_THREAD_CREATEX(x,y,z)	pthread_create((x), NULL, (y), (z))
+#   define P_THREAD_CREATE(x,y,z)       pthread_create(&(x), NULL, (y), (z))
+#   define P_THREAD_CREATEX(x,y,z)	pthread_create(&(x), NULL, (y), (z))
 #   define P_THREAD_CLOSE(x)
 #   define P_THREAD_DETACH(x)	pthread_detach((x))
 #   define P_THREAD_JOIN(x)	pthread_join((x), NULL)
@@ -86,6 +86,8 @@ POP_WARNING_IGNORE(NULL)
 #   define P_COND_CLEANUP(x)	pthread_cond_destroy(&(x))
 #   define P_COND_SIGNAL(x)	pthread_cond_signal(&(x))
 #   define P_COND_WAIT(x,y)	pthread_cond_wait(&(x), &(y))
+//TODO Implement on windows
+#   define P_COND_BROADCAST(x)   pthread_cond_broadcast(&(x));
 // #elif __linux__
 // #   define P_THREAD_ID() ({syscall(SYS_gettid);})
 // #elif defined(__APPLE__) && defined(__MACH__)

@@ -22,6 +22,12 @@ void CObject__init(CObject* self) {
     P_MUTEX_SETUP(self->ref_lock);
 }
 
+void CObject__set_allocated(CObject * self){
+    if(self){
+        self->allocated = 1;
+    }
+}
+
 CObject * CObject__create(){
     CObject* result = (CObject*) malloc(sizeof(CObject));
     CObject__init(result);
