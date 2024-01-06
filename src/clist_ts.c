@@ -31,7 +31,12 @@ void priv_CListTS__remove(CListTS* self, int index){
     //Update counter
     self->count--;
     //Resize array memory
-    self->data = realloc (self->data,sizeof(void *)*self->count);
+    if(self->count > 0){
+        self->data = realloc (self->data,sizeof(void *)*self->count);
+    } else {
+        free(self->data);
+        self->data = malloc(0);
+    }
 }
 
 CObject * priv_CListTS__get(CListTS * self, int index){
@@ -102,7 +107,8 @@ void CListTS__clear(CListTS* self){
             CObject__destroy(self->data[i]);
         }
         self->count = 0;
-        self->data = realloc(self->data,0);
+        free(self->data);
+        self->data = malloc(0);
         P_MUTEX_UNLOCK(self->lock);
     }
 }
