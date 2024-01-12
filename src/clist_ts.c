@@ -136,14 +136,15 @@ void CListTS__remove_record(CListTS * self, CObject * record){
         }
 
         if(found > -1){
-            if(i == self->count){
+            if(i == self->count-1){
                 break;
             }
             self->data[i] = self->data[i + 1];
-            if(found == i){
-                self->count--;
-            }
         }
+    }
+
+    if(found > -1){
+        self->count--;
     }
 
     if(found < 0){
