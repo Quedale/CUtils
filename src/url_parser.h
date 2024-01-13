@@ -14,7 +14,7 @@ ParsedURL * ParsedURL__create(char * url);
 void ParsedURL__destroy(ParsedURL * self);
 void ParsedURL__set_port(ParsedURL * self, char * port);
 char * ParsedURL__toString(ParsedURL * self);
-
+int ParsedURL__is_valid(ParsedURL * self);
 char * URL__set_port(char * url, char * port);
 
 #endif

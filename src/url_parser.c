@@ -42,6 +42,13 @@ void ParsedURL__set_port(ParsedURL * self, char * port){
     strcpy(self->port,port);
 }
 
+int ParsedURL__is_valid(ParsedURL * self){
+    if(!self || !self->hostorip || !self->port || !self->protocol){
+        return 0;
+    }
+    return 1;
+}
+
 char * ParsedURL__toString(ParsedURL * self){
     int len = strlen(self->protocol) + strlen(self->hostorip) + strlen(self->service) + 6;  //6 to support endofstring + '://' + '/' + '/'
     if(self->port){
@@ -89,8 +96,12 @@ ParsedURL * ParsedURL__create(char * url){
             strcpy(purl->hostorip,tmphost);
 
             char * tmpport = strtok_r ((char *)hostport, "/", &hostport);
-            purl->port = malloc(strlen(tmpport)+1);
-            strcpy(purl->port,tmpport);
+            if(tmpport && strlen(tmpport) > 0){
+                purl->port = malloc(strlen(tmpport)+1);
+                strcpy(purl->port,tmpport);
+            } else {
+                purl->port = NULL;
+            }
         } else { //If no port is set
             char * tmphost = strtok_r (hostport, ":", &hostport);
             purl->hostorip = malloc(strlen(tmphost)+1);
@@ -102,9 +113,12 @@ ParsedURL * ParsedURL__create(char * url){
         purl->port = NULL;
     }
 
-    char * tmpep = strtok_r ((char *)data, "\n", &data);
-    purl->service = malloc(strlen(tmpep)+1);
-    strcpy(purl->service,tmpep);
+    if(data && strlen(data) > 0){
+        purl->service = malloc(strlen(data)+1);
+        strcpy(purl->service,data);
+    } else {
+        purl->service = NULL;
+    }
 
     C_TRACE("protocol : '%s'",purl->protocol);
     C_TRACE("hostorip : '%s'",purl->hostorip);
