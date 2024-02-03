@@ -16,6 +16,16 @@
 #define C_ERROR(fmt, ...) c_log(C_ERROR_E, __FILENAME__, __LINE__, fmt, ##__VA_ARGS__)
 #define C_FATAL(fmt, ...) c_log(C_FATAL_E, __FILENAME__, __LINE__, fmt, ##__VA_ARGS__)
 
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_HL_RED  "\033[48:2:255:165:0m"
+#define ANSI_COLOR_DRK_GREEN "\x1b[38;5;2m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 typedef enum {
     C_OFF_E = -1,
     C_FATAL_E = 0,
@@ -27,6 +37,7 @@ typedef enum {
     C_ALL_E = 6
 } CLevel;
 
+void c_log_set_thread_color(char * ansi_color, long threadid);
 void c_log_set_level(CLevel level);
 void c_log(CLevel level, const char* file, int line, const char* fmt, ...);
 

@@ -14,16 +14,8 @@ const char * C_LEVEL_STRING[] = {
     "TRACE"
 };
 
-#define ANSI_COLOR_RED     "\x1b[31m"
-#define ANSI_COLOR_GREEN   "\x1b[32m"
-#define ANSI_COLOR_HL_RED  "\033[48:2:255:165:0m"
-#define ANSI_COLOR_YELLOW  "\x1b[33m"
-#define ANSI_COLOR_BLUE    "\x1b[34m"
-#define ANSI_COLOR_MAGENTA "\x1b[35m"
-#define ANSI_COLOR_CYAN    "\x1b[36m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
-
 #define LOG_PREFIX_FMT "%s %s %ld %s:%d: "
+#define LOG_PREFIX_DECOR_THREAD_FMT "%s %s %s%ld%s %s:%d: "
 #define LOG_TIME_FMT "%y-%m-%d %H:%M:%S"
 #define LOG_UTIME_FMT ".%06ld"
 #define LOG_NEWLINE_STR "\n"
@@ -41,25 +33,78 @@ const char * C_LEVEL_COLOR[] = {
 
 static P_MUTEX_TYPE logger_lock = P_MUTEX_INITIALIZER;
 
-//Global properties protected by lock
-static CLevel C_LEVEL_SET = C_TRACE_E;
-static int wait_fmt_val = 0; //fmt indicator that % was crossed
-static struct tm calendar; //Calendar pointer used to convert number to string
-static char fmt_buff[30]; //fmt buff while parsing arguments
-
-/*
-* On windows it doesn't need extra padding for ANSI colors
-*/
 #if defined(_WIN32) || defined(_WIN64)
 #   define LOG_MAX_LVL_LEN 6
 #else
 #   define LOG_MAX_LVL_LEN 27
 #endif
+
+//Global properties protected by lock
+static CLevel C_LEVEL_SET = C_TRACE_E;
+static int wait_fmt_val = 0; //fmt indicator that % was crossed
+static struct tm calendar; //Calendar pointer used to convert number to string
+static char fmt_buff[30]; //fmt buff while parsing arguments
+/*
+* On windows it doesn't need extra padding for ANSI colors
+*/
 static char strlvl[LOG_MAX_LVL_LEN];
 static char strtime[255];
 static long threadID;
 static va_list carg;
 static long data_written = 0;
+
+typedef struct {
+    long threadid;
+    char * thread_color;
+} ThreadColor;
+
+typedef struct {
+    int count;
+    ThreadColor * threadcolors;
+} ThreadColorMap;
+
+ThreadColorMap THREAD_COLOR_MAP = { 0,0};
+
+char * c_log_get_thread_color(long threadid){
+    char * found_color = NULL;
+    for(int i=0;i<THREAD_COLOR_MAP.count;i++){
+        ThreadColor color = THREAD_COLOR_MAP.threadcolors[i];
+        if(color.threadid == threadid){
+            found_color = color.thread_color;
+            break;
+        }
+    }
+
+    return found_color;
+}
+
+void c_log_set_thread_color(char * ansi_color, long threadid){
+    P_MUTEX_LOCK(logger_lock);
+    ThreadColor * found_color = NULL;
+    //Find existing mapping;
+    for(int i=0;i<THREAD_COLOR_MAP.count;i++){
+        ThreadColor color = THREAD_COLOR_MAP.threadcolors[i];
+        if(color.threadid == threadid){
+            found_color = &color;
+            break;
+        }
+    }
+
+    //Create/Update mapping
+    if(!found_color){
+        THREAD_COLOR_MAP.count++;
+        if(!THREAD_COLOR_MAP.threadcolors){
+            THREAD_COLOR_MAP.threadcolors = malloc(sizeof(ThreadColor) * THREAD_COLOR_MAP.count);
+        } else {
+            THREAD_COLOR_MAP.threadcolors = realloc(THREAD_COLOR_MAP.threadcolors,sizeof(ThreadColor) * THREAD_COLOR_MAP.count);
+        }
+        ThreadColor newcolor = {threadid,ansi_color};
+        THREAD_COLOR_MAP.threadcolors[THREAD_COLOR_MAP.count-1] = newcolor;
+    } else {
+        found_color->thread_color = ansi_color;
+    }
+    P_MUTEX_UNLOCK(logger_lock);
+}
 
 void c_log_set_level(CLevel level){
     C_LEVEL_SET = level;
@@ -123,6 +168,16 @@ static int is_specifier(char * c){
     return 0;
 }
 
+int c_priv_log_print_prefix(FILE* fp, char * strlvl, const char* timestamp, 
+        long threadID, const char* file, int line){
+    char * tcolor = c_log_get_thread_color(threadID);
+    if(tcolor){
+        return fprintf(fp, LOG_PREFIX_DECOR_THREAD_FMT, strlvl, timestamp, tcolor, threadID, ANSI_COLOR_RESET, file, line);
+    } else {
+        return fprintf(fp, LOG_PREFIX_FMT, strlvl, timestamp, threadID, file, line);
+    }
+}
+
 static void c_priv_log_string(FILE* fp, char * strlvl, const char* timestamp, 
         long threadID, const char* file, int line, va_list arg, int * size, long * totalsize){
     const char * str_arg = va_arg(arg,const char *);
@@ -138,7 +193,7 @@ static void c_priv_log_string(FILE* fp, char * strlvl, const char* timestamp,
         if ((*size = fputc(str_arg[i],fp)) > 0) *totalsize += *size;
 
         //Print line prefix if newline character was added
-        if(str_arg[i] == LOG_NEWLINE_CHAR && (*size = fprintf(fp, LOG_PREFIX_FMT, strlvl, timestamp, threadID, file, line)) > 0) *totalsize += *size;
+        if(str_arg[i] == LOG_NEWLINE_CHAR && (*size = c_priv_log_print_prefix(fp, strlvl, timestamp, threadID, file, line)) > 0) *totalsize += *size;
     }
 }
 
@@ -188,7 +243,7 @@ static void c_priv_log(FILE* fp, char * strlvl, const char* timestamp,
     char * tok = strtok_r(cfmt, LOG_NEWLINE_STR, &LOG_TOK_PTR);
     while (tok) {
         //Print line prefix
-        if ((LOG_TMP_SIZE = fprintf(fp, LOG_PREFIX_FMT, strlvl, timestamp, threadID, file, line)) > 0) *totalsize += LOG_TMP_SIZE;
+        if ((LOG_TMP_SIZE = c_priv_log_print_prefix(fp, strlvl, timestamp, threadID, file, line)) > 0) *totalsize += LOG_TMP_SIZE;
 
         //Print actual line
         c_priv_log_line(fp, strlvl, timestamp, threadID, file, line, tok, arg, &LOG_TMP_SIZE, totalsize);

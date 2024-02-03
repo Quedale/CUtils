@@ -120,10 +120,5 @@ ParsedURL * ParsedURL__create(char * url){
         purl->service = NULL;
     }
 
-    C_TRACE("protocol : '%s'",purl->protocol);
-    C_TRACE("hostorip : '%s'",purl->hostorip);
-    C_TRACE("port : '%s'",purl->port);
-    C_TRACE("service : '%s'",purl->service);
-
     return purl;
 }
