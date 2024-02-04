@@ -55,7 +55,7 @@ static long data_written = 0;
 
 typedef struct {
     long threadid;
-    char * thread_color;
+    char thread_color[LOG_MAX_LVL_LEN];
 } ThreadColor;
 
 typedef struct {
@@ -65,44 +65,40 @@ typedef struct {
 
 ThreadColorMap THREAD_COLOR_MAP = { 0,0};
 
-char * c_log_get_thread_color(long threadid){
-    char * found_color = NULL;
+void c_log_get_thread_color(long threadid, char * color){
     for(int i=0;i<THREAD_COLOR_MAP.count;i++){
-        ThreadColor color = THREAD_COLOR_MAP.threadcolors[i];
-        if(color.threadid == threadid){
-            found_color = color.thread_color;
+        ThreadColor tcolor = THREAD_COLOR_MAP.threadcolors[i];
+        if(tcolor.threadid == threadid){
+            strcpy(color,tcolor.thread_color);
             break;
         }
     }
-
-    return found_color;
 }
 
 void c_log_set_thread_color(char * ansi_color, long threadid){
     P_MUTEX_LOCK(logger_lock);
-    ThreadColor * found_color = NULL;
     //Find existing mapping;
     for(int i=0;i<THREAD_COLOR_MAP.count;i++){
         ThreadColor color = THREAD_COLOR_MAP.threadcolors[i];
         if(color.threadid == threadid){
-            found_color = &color;
-            break;
+            strcpy(color.thread_color,ansi_color);
+            goto exit;
         }
     }
 
     //Create/Update mapping
-    if(!found_color){
-        THREAD_COLOR_MAP.count++;
-        if(!THREAD_COLOR_MAP.threadcolors){
-            THREAD_COLOR_MAP.threadcolors = malloc(sizeof(ThreadColor) * THREAD_COLOR_MAP.count);
-        } else {
-            THREAD_COLOR_MAP.threadcolors = realloc(THREAD_COLOR_MAP.threadcolors,sizeof(ThreadColor) * THREAD_COLOR_MAP.count);
-        }
-        ThreadColor newcolor = {threadid,ansi_color};
-        THREAD_COLOR_MAP.threadcolors[THREAD_COLOR_MAP.count-1] = newcolor;
+    THREAD_COLOR_MAP.count++;
+    if(!THREAD_COLOR_MAP.threadcolors){
+        THREAD_COLOR_MAP.threadcolors = malloc(sizeof(ThreadColor) * THREAD_COLOR_MAP.count);
     } else {
-        found_color->thread_color = ansi_color;
+        THREAD_COLOR_MAP.threadcolors = realloc(THREAD_COLOR_MAP.threadcolors,sizeof(ThreadColor) * THREAD_COLOR_MAP.count);
     }
+    ThreadColor newcolor;
+    newcolor.threadid = threadid;
+    strcpy(newcolor.thread_color,ansi_color);
+    THREAD_COLOR_MAP.threadcolors[THREAD_COLOR_MAP.count-1] = newcolor;
+
+exit:
     P_MUTEX_UNLOCK(logger_lock);
 }
 
@@ -170,8 +166,10 @@ static int is_specifier(char * c){
 
 int c_priv_log_print_prefix(FILE* fp, char * strlvl, const char* timestamp, 
         long threadID, const char* file, int line){
-    char * tcolor = c_log_get_thread_color(threadID);
-    if(tcolor){
+            
+    char tcolor[LOG_MAX_LVL_LEN];
+    c_log_get_thread_color(threadID,tcolor);
+    if(strlen(tcolor) > 0){
         return fprintf(fp, LOG_PREFIX_DECOR_THREAD_FMT, strlvl, timestamp, tcolor, threadID, ANSI_COLOR_RESET, file, line);
     } else {
         return fprintf(fp, LOG_PREFIX_FMT, strlvl, timestamp, threadID, file, line);
