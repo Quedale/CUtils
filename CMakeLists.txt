@@ -49,6 +49,8 @@ if(NOT WIN32)
   install(FILES ${PROJECT_BINARY_DIR}/cutils.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 endif()
 
+target_compile_options(cutils PRIVATE "SHELL: -Wall -Wextra -Wpedantic -Wno-unused-parameter")
+
 # aux_source_directory(samples log_src)
 add_executable(logging samples/logging.c)
 target_link_libraries(logging PRIVATE cutils)

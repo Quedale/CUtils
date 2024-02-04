@@ -200,8 +200,8 @@ static void c_priv_log_string(FILE* fp, char * strlvl, const char* timestamp,
 static void c_priv_log_line(FILE* fp, char * strlvl, const char* timestamp, 
         long threadID, const char* file, int line, char* log_line, va_list arg, int * size, long * totalsize){
 
-    int line_len = strlen(log_line);
-    for(int i=0;i<=line_len;i++){
+    unsigned int line_len = strlen(log_line);
+    for(unsigned int i=0;i<=line_len;i++){
         if(wait_fmt_val){
             fmt_buff[wait_fmt_val]=log_line[i];
             if(is_specifier(&(log_line[i]))){

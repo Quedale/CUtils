@@ -13,7 +13,7 @@ void priv_CListTS__remove_element_and_shift(CListTS* self, CObject **array, int 
     for(i = index; i < array_length-1; i++) {
         array[i] = array[i + 1];
     }
-};
+}
 
 void priv_CListTS__destroy(CObject * self){
     CListTS * list = (CListTS*) self;
@@ -71,7 +71,7 @@ void CListTS__add(CListTS* self, CObject * record){
     //Trigger event_count inrrement
     self->count++;
     P_MUTEX_UNLOCK(self->lock);
-};
+}
 
 void CListTS__remove(CListTS* self, int index){
     P_MUTEX_LOCK(self->lock);

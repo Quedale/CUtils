@@ -25,7 +25,7 @@ void CList__insert_element(CList* self, CObject * record, int index){
     }
     self->data[index]=record;
     self->count++;
-};
+}
 
 void CList__remove_element(CList* self, int index){
     //Remove element and shift content
@@ -58,7 +58,7 @@ int priv_CList__remove_element_and_shift(CList* self, CObject **array, int index
         array[i] = array[i + 1];
     }
     return shrink_size;
-};
+}
 
 void priv_CList__destroy(CObject * self){
     CList * list = (CList*)self;
