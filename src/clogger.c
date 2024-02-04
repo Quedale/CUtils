@@ -70,9 +70,10 @@ void c_log_get_thread_color(long threadid, char * color){
         ThreadColor tcolor = THREAD_COLOR_MAP.threadcolors[i];
         if(tcolor.threadid == threadid){
             strcpy(color,tcolor.thread_color);
-            break;
+            return;
         }
     }
+    color[0] = '\0';
 }
 
 void c_log_set_thread_color(char * ansi_color, long threadid){
