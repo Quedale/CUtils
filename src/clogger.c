@@ -11,7 +11,8 @@ const char * C_LEVEL_STRING[] = {
     "WARN ",
     "INFO ",
     "DEBUG",
-    "TRACE"
+    "TRACE",
+    "TRAIL"
 };
 
 #define LOG_PREFIX_FMT "%s %s %ld %s:%d: "
@@ -28,7 +29,8 @@ const char * C_LEVEL_COLOR[] = {
     ANSI_COLOR_YELLOW, //Warning = yellow
     ANSI_COLOR_BLUE, //Info = blue
     ANSI_COLOR_CYAN, //Debug = cyan
-    ANSI_COLOR_RESET //Trace = reset
+    ANSI_COLOR_RESET, //Trace = reset
+    ANSI_COLOR_MAGENTA
 };
 
 static P_MUTEX_TYPE logger_lock = P_MUTEX_INITIALIZER;
