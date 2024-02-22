@@ -32,7 +32,8 @@ set(headers ${PROJECT_SOURCE_DIR}/src/clist_ts.h
             ${PROJECT_SOURCE_DIR}/src/clogger.h
             ${PROJECT_SOURCE_DIR}/src/cobject.h
             ${PROJECT_SOURCE_DIR}/src/portable_thread.h
-            ${PROJECT_SOURCE_DIR}/src/url_parser.h)
+            ${PROJECT_SOURCE_DIR}/src/url_parser.h
+            ${PROJECT_SOURCE_DIR}/src/cstring_utils.h)
 install(FILES ${headers} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 #Setting pkgconfig file file variables
