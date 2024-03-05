@@ -13,8 +13,10 @@ struct _ParsedURL {
 ParsedURL * ParsedURL__create(char * url);
 void ParsedURL__destroy(ParsedURL * self);
 void ParsedURL__set_port(ParsedURL * self, char * port);
+void ParsedURL__set_host(ParsedURL * self, char * host);
 char * ParsedURL__toString(ParsedURL * self);
 int ParsedURL__is_valid(ParsedURL * self);
 char * URL__set_port(char * url, char * port);
+char * URL__set_host(char * url, char * port);
 
 #endif

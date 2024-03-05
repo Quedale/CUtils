@@ -12,6 +12,15 @@ char * URL__set_port(char * url, char * new_port){
     return new_url;
 }
 
+char * URL__set_host(char * url, char * new_host){
+    ParsedURL * purl = ParsedURL__create(url);
+    ParsedURL__set_host(purl,new_host);
+    char * new_url = ParsedURL__toString(purl);
+    ParsedURL__destroy(purl);
+
+    return new_url;
+}
+
 void ParsedURL__destroy(ParsedURL * self){
     if(!self)
         return;
@@ -40,6 +49,22 @@ void ParsedURL__set_port(ParsedURL * self, char * port){
         self->port = realloc(self->port,strlen(port)+1);
     }
     strcpy(self->port,port);
+}
+
+void ParsedURL__set_host(ParsedURL * self, char * host){
+    if(!host){
+        if(self->hostorip){
+            free(self->hostorip);
+            self->hostorip = NULL;
+            return;
+        }
+    }
+    if(!self->hostorip){
+        self->hostorip = malloc(strlen(host)+1);
+    } else {
+        self->hostorip = realloc(self->hostorip,strlen(host)+1);
+    }
+    strcpy(self->hostorip,host);
 }
 
 int ParsedURL__is_valid(ParsedURL * self){
