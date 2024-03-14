@@ -125,7 +125,19 @@ void CListTS__set_destroy_callback(CListTS* self, void (*destroy_callback)(CList
     self->destroy_callback = destroy_callback;
 }
 
-void CListTS__remove_record(CListTS * self, CObject * record){
+int CListTS__destroy_record(CListTS * self, CObject * record){
+    int found = CListTS__remove_record(self,record);
+    if(found < 0){
+        C_ERROR("---------------------\n");
+        C_ERROR("| ERROR record not found for clean up %i\n", found);
+        C_ERROR("---------------------\n");
+    } else {
+        CObject__destroy(record);
+    }
+    return found;
+}
+
+int CListTS__remove_record(CListTS * self, CObject * record){
     P_MUTEX_LOCK(self->lock);
     int found = -1; 
 
@@ -149,10 +161,9 @@ void CListTS__remove_record(CListTS * self, CObject * record){
 
     if(found < 0){
         C_ERROR("---------------------\n");
-        C_ERROR("| ERROR record not found for clean up %i\n", found);
+        C_ERROR("| ERROR record not found %i\n", found);
         C_ERROR("---------------------\n");
-    } else {
-        CObject__destroy(record);
     }
     P_MUTEX_UNLOCK(self->lock);
+    return found;
 }

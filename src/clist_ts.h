@@ -19,7 +19,8 @@ void CListTS__init(CListTS* self);
 
 void CListTS__add(CListTS* self, CObject * record);
 void CListTS__remove(CListTS* self, int index);
-void CListTS__remove_record(CListTS * self, CObject * record);
+int CListTS__destroy_record(CListTS * self, CObject * record);
+int CListTS__remove_record(CListTS * self, CObject * record);
 CObject * CListTS__get(CListTS * self, int index);
 CObject * CListTS__pop(CListTS * self);
 void CListTS__clear(CListTS* self);
