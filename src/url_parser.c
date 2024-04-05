@@ -32,6 +32,10 @@ void ParsedURL__destroy(ParsedURL * self){
         free(self->port);
     if(self->service)
         free(self->service);
+    if(self->user)
+        free(self->user);
+    if(self->pass)
+        free(self->pass);
     free(self);
 }
 
@@ -79,11 +83,25 @@ char * ParsedURL__toString(ParsedURL * self){
     if(self->port){
         len += strlen(self->port) +1; //1 to support ':'
     }
+    if(self->user){
+        len += strlen(self->user) +1; //1 to support '@'
+        if(self->pass){
+            len += strlen(self->pass) +1; //1 to support ':'
+        }
+    }
 
     char * full_url = malloc(len);
 
     strcpy(full_url,self->protocol);
     strcat(full_url,"://");
+    if(self->user){
+        strcat(full_url,self->user);
+        if(self->pass){
+            strcat(full_url,":");
+            strcat(full_url,self->pass);
+        }
+        strcat(full_url,"@");
+    }
     strcat(full_url,self->hostorip);
     if(self->port){
         strcat(full_url,":");
@@ -98,6 +116,8 @@ char * ParsedURL__toString(ParsedURL * self){
 ParsedURL * ParsedURL__create(char * url){
 
     ParsedURL * purl = malloc(sizeof(ParsedURL));
+    purl->user = NULL;
+    purl->pass = NULL;
 
     char data_arr[strlen(url)+1];
     char * data = data_arr;
@@ -111,16 +131,29 @@ ParsedURL * ParsedURL__create(char * url){
         purl->protocol = NULL;
     }
 
-    char *hostport = strtok_r ((char *)data, "/", &data);
+    char *hostportcred = strtok_r ((char *)data, "/", &data);
 
     //TODO Support IPv6
-    if(hostport){
-        if(strstr(hostport,":")){ //If the port is set
-            char * tmphost = strtok_r (hostport, ":", &hostport);
+    if(hostportcred){
+        if(strstr(hostportcred,"@")){ //Contains credentials
+            char * tmpcred = strtok_r (hostportcred, "@", &hostportcred);
+            char * tmpuser = strtok_r (tmpcred, ":", &tmpcred);
+            purl->user = malloc(strlen(tmpuser)+1);
+            strcpy(purl->user,tmpuser);
+
+            if(strstr(hostportcred,":")){ //Contains password
+                char * tmppass = strtok_r (tmpcred, ":", &tmpcred);
+                purl->pass = malloc(strlen(tmppass)+1);
+                strcpy(purl->pass,tmppass);
+            }
+        }
+
+        if(strstr(hostportcred,":")){ //If the port is set
+            char * tmphost = strtok_r (hostportcred, ":", &hostportcred);
             purl->hostorip = malloc(strlen(tmphost)+1);
             strcpy(purl->hostorip,tmphost);
 
-            char * tmpport = strtok_r ((char *)hostport, "/", &hostport);
+            char * tmpport = strtok_r ((char *)hostportcred, "/", &hostportcred);
             if(tmpport && strlen(tmpport) > 0){
                 purl->port = malloc(strlen(tmpport)+1);
                 strcpy(purl->port,tmpport);
@@ -128,7 +161,7 @@ ParsedURL * ParsedURL__create(char * url){
                 purl->port = NULL;
             }
         } else { //If no port is set
-            char * tmphost = strtok_r (hostport, ":", &hostport);
+            char * tmphost = strtok_r (hostportcred, ":", &hostportcred);
             purl->hostorip = malloc(strlen(tmphost)+1);
             strcpy(purl->hostorip,tmphost);
             purl->port = NULL;

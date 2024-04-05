@@ -55,3 +55,6 @@ target_compile_options(cutils PRIVATE "SHELL: -Wall -Wextra -Wpedantic -Wno-unus
 # aux_source_directory(samples log_src)
 add_executable(logging samples/logging.c)
 target_link_libraries(logging PRIVATE cutils)
+
+add_executable(urlparserdemo samples/url_parser_demo.c)
+target_link_libraries(urlparserdemo PRIVATE cutils)

@@ -8,6 +8,8 @@ struct _ParsedURL {
     char * hostorip;
     char * port;
     char * service;
+    char * user;
+    char * pass;
 };
 
 ParsedURL * ParsedURL__create(char * url);
