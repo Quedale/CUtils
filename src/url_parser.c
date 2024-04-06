@@ -71,6 +71,35 @@ void ParsedURL__set_host(ParsedURL * self, char * host){
     strcpy(self->hostorip,host);
 }
 
+void ParsedURL__set_protocol(ParsedURL * self, char * proto){
+    if(!proto){
+        if(self->protocol){
+            free(self->protocol);
+            self->protocol = NULL;
+            return;
+        }
+    }
+
+    if(!self->protocol){
+        self->protocol = malloc(strlen(proto)+1);
+    } else {
+        self->protocol = realloc(self->protocol,strlen(proto)+1);
+    }
+    strcpy(self->protocol,proto);
+}
+
+char* ParsedURL__get_port(ParsedURL * self){
+    return self->port;
+}
+
+char* ParsedURL__get_host(ParsedURL * self){
+    return self->hostorip;
+}
+
+char* ParsedURL__get_protocol(ParsedURL * self){
+    return self->protocol;
+}
+
 int ParsedURL__is_valid(ParsedURL * self){
     if(!self || !self->hostorip || !self->port || !self->protocol){
         return 0;
