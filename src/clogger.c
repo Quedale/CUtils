@@ -10,6 +10,7 @@ const char * C_LEVEL_STRING[] = {
     "ERROR",
     "WARN ",
     "INFO ",
+    "FIXME",
     "DEBUG",
     "TRACE",
     "TRAIL"
@@ -28,6 +29,7 @@ const char * C_LEVEL_COLOR[] = {
     ANSI_COLOR_RED, //Error = red
     ANSI_COLOR_YELLOW, //Warning = yellow
     ANSI_COLOR_BLUE, //Info = blue
+    ANSI_COLOR_HL_GREEN, //Fixme = green with background grey
     ANSI_COLOR_CYAN, //Debug = cyan
     ANSI_COLOR_RESET, //Trace = reset
     ANSI_COLOR_MAGENTA

@@ -13,6 +13,7 @@
 #define C_TRACE(fmt, ...) c_log(C_TRACE_E, __FILENAME__, __LINE__, fmt, ##__VA_ARGS__)
 #define C_DEBUG(fmt, ...) c_log(C_DEBUG_E, __FILENAME__, __LINE__, fmt, ##__VA_ARGS__)
 #define C_INFO(fmt, ...)  c_log(C_INFO_E , __FILENAME__, __LINE__, fmt, ##__VA_ARGS__)
+#define C_FIXME(fmt, ...)  c_log(C_FIXME_E , __FILENAME__, __LINE__, fmt, ##__VA_ARGS__)
 #define C_WARN(fmt, ...)  c_log(C_WARN_E , __FILENAME__, __LINE__, fmt, ##__VA_ARGS__)
 #define C_ERROR(fmt, ...) c_log(C_ERROR_E, __FILENAME__, __LINE__, fmt, ##__VA_ARGS__)
 #define C_FATAL(fmt, ...) c_log(C_FATAL_E, __FILENAME__, __LINE__, fmt, ##__VA_ARGS__)
@@ -21,6 +22,7 @@
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 #define ANSI_COLOR_HL_RED  "\033[48:2:255:165:0m"
 #define ANSI_COLOR_DRK_GREEN "\x1b[38;5;2m"
+#define ANSI_COLOR_HL_GREEN "\x1b[48;5;46m\x1b[38;5;0m"
 #define ANSI_COLOR_YELLOW  "\x1b[33m"
 #define ANSI_COLOR_BLUE    "\x1b[34m"
 #define ANSI_COLOR_MAGENTA "\x1b[35m"
@@ -33,10 +35,11 @@ typedef enum {
     C_ERROR_E = 1,
     C_WARN_E = 2,
     C_INFO_E = 3,
-    C_DEBUG_E = 4,
-    C_TRACE_E = 5,
-    C_TRAIL_E = 6,
-    C_ALL_E = 7
+    C_FIXME_E = 4,
+    C_DEBUG_E = 5,
+    C_TRACE_E = 6,
+    C_TRAIL_E = 7,
+    C_ALL_E = 8
 } CLevel;
 
 void c_log_set_thread_color(char * ansi_color, long threadid);
