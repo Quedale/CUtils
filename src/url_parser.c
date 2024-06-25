@@ -108,7 +108,10 @@ int ParsedURL__is_valid(ParsedURL * self){
 }
 
 char * ParsedURL__toString(ParsedURL * self){
-    int len = strlen(self->protocol) + strlen(self->hostorip) + strlen(self->service) + 6;  //6 to support endofstring + '://' + '/' + '/'
+    int len = strlen(self->protocol) + strlen(self->hostorip)+ 6;  //6 to support endofstring + '://' + '/' + '/'
+    if(self->service)
+        len += strlen(self->service);
+    
     if(self->port){
         len += strlen(self->port) +1; //1 to support ':'
     }
@@ -137,7 +140,8 @@ char * ParsedURL__toString(ParsedURL * self){
         strcat(full_url,self->port);
     }
     strcat(full_url,"/");
-    strcat(full_url,self->service);
+    if(self->service)
+        strcat(full_url,self->service);
 
     return full_url;
 }
