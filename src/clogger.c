@@ -111,6 +111,10 @@ void c_log_set_level(CLevel level){
     C_LEVEL_SET = level;
 }
 
+CLevel c_log_get_level(){
+    return C_LEVEL_SET;
+}
+
 static const char * c_level_to_string(CLevel level){
     if(level < C_ALL_E){
         return C_LEVEL_STRING[level];

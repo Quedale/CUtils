@@ -44,6 +44,7 @@ typedef enum {
 
 void c_log_set_thread_color(char * ansi_color, long threadid);
 void c_log_set_level(CLevel level);
+CLevel c_log_get_level();
 void c_log(CLevel level, const char* file, int line, const char* fmt, ...);
 
 #endif

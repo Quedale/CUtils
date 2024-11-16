@@ -101,7 +101,7 @@ char* ParsedURL__get_protocol(ParsedURL * self){
 }
 
 int ParsedURL__is_valid(ParsedURL * self){
-    if(!self || !self->hostorip || !self->port || !self->protocol){
+    if(!self || !self->hostorip || !self->protocol){
         return 0;
     }
     return 1;
