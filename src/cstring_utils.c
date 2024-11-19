@@ -1,6 +1,7 @@
 #include "cstring_utils.h"
 #include <stddef.h>
 #include <string.h>
+#include <stdlib.h>
 
 int cstring_startsWith(const char *pre, const char *str)
 {
@@ -17,4 +18,16 @@ int cstring_occurence_count(const char * text, int text_len, const char letter){
         }
     }
     return count;
+}
+
+void cstring_safe_copy(char ** dest, char * source, char * default_val){
+    if(source){
+        *dest = malloc(strlen(source)+1);
+        strcpy(*dest,source);
+    } else if(default_val){
+        *dest = malloc(strlen(default_val)+1);
+        strcpy(*dest,default_val);
+    } else {
+        *dest = NULL;
+    }
 }
