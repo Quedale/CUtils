@@ -60,8 +60,8 @@ void ParsedURL__set_host(ParsedURL * self, char * host){
         if(self->hostorip){
             free(self->hostorip);
             self->hostorip = NULL;
-            return;
         }
+        return;
     }
     if(!self->hostorip){
         self->hostorip = malloc(strlen(host)+1);
@@ -76,8 +76,8 @@ void ParsedURL__set_protocol(ParsedURL * self, char * proto){
         if(self->protocol){
             free(self->protocol);
             self->protocol = NULL;
-            return;
         }
+        return;
     }
 
     if(!self->protocol){
