@@ -44,8 +44,8 @@ void ParsedURL__set_port(ParsedURL * self, char * port){
         if(self->port){
             free(self->port);
             self->port = NULL;
-            return;
         }
+        return;
     }
     if(!self->port){
         self->port = malloc(strlen(port)+1);
