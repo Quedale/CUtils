@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5.0)
 project(cutils VERSION 0.0.1)
 
 set(OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/release)
