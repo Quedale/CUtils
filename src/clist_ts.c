@@ -3,12 +3,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void priv_CListTS__remove_element_and_shift(CListTS* self, CObject **array, int index, int array_length);
+void priv_CListTS__remove_element_and_shift(CObject **array, int index, int array_length);
 void priv_CListTS__destroy(CObject* self);
 void priv_CListTS__remove(CListTS* self, int index);
 CObject * priv_CListTS__get(CListTS * self, int index);
 
-void priv_CListTS__remove_element_and_shift(CListTS* self, CObject **array, int index, int array_length){
+void priv_CListTS__remove_element_and_shift(CObject **array, int index, int array_length){
     int i;
     for(i = index; i < array_length-1; i++) {
         array[i] = array[i + 1];
@@ -27,7 +27,7 @@ void priv_CListTS__destroy(CObject * self){
 
 void priv_CListTS__remove(CListTS* self, int index){
     //Remove element and shift content
-    priv_CListTS__remove_element_and_shift(self,self->data, index, self->count);  /* First shift the elements, then reallocate */
+    priv_CListTS__remove_element_and_shift(self->data, index, self->count);  /* First shift the elements, then reallocate */
     //Update counter
     self->count--;
     //Resize array memory

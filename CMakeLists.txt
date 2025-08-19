@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.18.1)
 project(cutils VERSION 0.0.1)
 
 set(OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/release)
@@ -50,7 +50,12 @@ if(NOT WIN32)
   install(FILES ${PROJECT_BINARY_DIR}/cutils.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 endif()
 
-target_compile_options(cutils PRIVATE "SHELL: -Wall -Wextra -Wpedantic -Wno-unused-parameter")
+if(DEFINED CMAKE_ANDROID_NDK)
+  #See https://github.com/llvm/llvm-project/issues/76375
+  target_compile_options(cutils PRIVATE "-Wno-gnu-zero-variadic-macro-arguments")
+else()
+  target_compile_options(cutils PRIVATE "SHELL: -Wall -Wextra -Wpedantic -Wno-unused-parameter")
+endif()
 
 # aux_source_directory(samples log_src)
 add_executable(logging samples/logging.c)
@@ -58,3 +63,5 @@ target_link_libraries(logging PRIVATE cutils)
 
 add_executable(urlparserdemo samples/url_parser_demo.c)
 target_link_libraries(urlparserdemo PRIVATE cutils)
+
+target_include_directories (cutils PUBLIC "${CMAKE_CURRENT_LIST_DIR}/src")
