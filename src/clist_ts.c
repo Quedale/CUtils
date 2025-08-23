@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
 void priv_CListTS__remove_element_and_shift(CObject **array, int index, int array_length);
 void priv_CListTS__destroy(CObject* self);
 void priv_CListTS__remove(CListTS* self, int index);
@@ -23,6 +24,7 @@ void priv_CListTS__destroy(CObject * self){
     CListTS__clear(list);
     P_MUTEX_CLEANUP(list->lock);
     free(list->data);
+    list->data = NULL;
 }
 
 void priv_CListTS__remove(CListTS* self, int index){
@@ -35,7 +37,7 @@ void priv_CListTS__remove(CListTS* self, int index){
         self->data = realloc (self->data,sizeof(void *)*self->count);
     } else {
         free(self->data);
-        self->data = malloc(0);
+        self->data = NULL;
     }
 }
 
@@ -61,12 +63,15 @@ void CListTS__init(CListTS* self){
     P_MUTEX_SETUP(self->lock);
     self->destroy_callback = NULL;
     self->count = 0;
-    self->data = malloc(0);
+    self->data = NULL;
 }
 
 void CListTS__add(CListTS* self, CObject * record){
     P_MUTEX_LOCK(self->lock);
-    self->data = realloc (self->data,sizeof (void *) * (self->count+1));
+    if(!self->data)
+        self->data = malloc(sizeof (void *));
+    else
+        self->data = realloc (self->data,sizeof (void *) * (self->count+1));
     self->data[self->count]=record;
     //Trigger event_count inrrement
     self->count++;
@@ -108,7 +113,7 @@ void CListTS__clear(CListTS* self){
         }
         self->count = 0;
         free(self->data);
-        self->data = malloc(0);
+        self->data = NULL;
         P_MUTEX_UNLOCK(self->lock);
     }
 }

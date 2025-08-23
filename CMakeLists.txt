@@ -50,9 +50,11 @@ if(NOT WIN32)
   install(FILES ${PROJECT_BINARY_DIR}/cutils.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 endif()
 
-if(DEFINED CMAKE_ANDROID_NDK)
+if(ANDROID)
   #See https://github.com/llvm/llvm-project/issues/76375
   target_compile_options(cutils PRIVATE "-Wno-gnu-zero-variadic-macro-arguments")
+  find_library(LOG_LIB log REQUIRED)
+  target_link_libraries(cutils PRIVATE log)
 else()
   target_compile_options(cutils PRIVATE "SHELL: -Wall -Wextra -Wpedantic -Wno-unused-parameter")
 endif()

@@ -1,8 +1,38 @@
 #include "clogger.h"
+#include <stdarg.h>
+
+static CLevel C_LEVEL_SET = C_ALL_E;
+
+void c_log_set_level(CLevel level){
+    C_LEVEL_SET = level;
+}
+
+CLevel c_log_get_level(){
+    return C_LEVEL_SET;
+}
+
+#ifdef ANDROID
+#include <android/log.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+void c_log(CLevel level, const char* file, int line, const char* fmt, ...){
+
+    if(level < C_LEVEL_SET) return;
+
+    va_list carg;
+    va_start(carg, fmt);
+    char strline[strlen(file) + strlen(fmt) + (int)floor(log10(abs(line))) + 3];
+    sprintf(strline, "%s:%d %s", file,line,fmt);
+    __android_log_vprint(level, "native", strline, carg);
+    va_end(carg);
+}
+
+#else
 #include "portable_thread.h"
 #include "portable_io.h"
 #include "portable_time.h"
-#include <stdarg.h>
 
 const char * UNKNOWN_C_LEVEL = "UNKN ";
 const char * C_LEVEL_STRING[] = {
@@ -44,7 +74,6 @@ static P_MUTEX_TYPE logger_lock = P_MUTEX_INITIALIZER;
 #endif
 
 //Global properties protected by lock
-static CLevel C_LEVEL_SET = C_TRACE_E;
 static int wait_fmt_val = 0; //fmt indicator that % was crossed
 static struct tm calendar; //Calendar pointer used to convert number to string
 static char fmt_buff[30]; //fmt buff while parsing arguments
@@ -105,14 +134,6 @@ void c_log_set_thread_color(char * ansi_color, long threadid){
 
 exit:
     P_MUTEX_UNLOCK(logger_lock);
-}
-
-void c_log_set_level(CLevel level){
-    C_LEVEL_SET = level;
-}
-
-CLevel c_log_get_level(){
-    return C_LEVEL_SET;
 }
 
 static const char * c_level_to_string(CLevel level){
@@ -295,3 +316,5 @@ void c_log(CLevel level, const char* file, int line, const char* fmt, ...){
     P_UNLOCK_FILE(stdout);
     P_MUTEX_UNLOCK(logger_lock);
 }
+
+#endif

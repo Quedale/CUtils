@@ -14,12 +14,16 @@ CList * CList__create(){
 void CList__init(CList* self){
     CObject__init((CObject*)self);
     self->count = 0;
-    self->data = malloc(0);
+    self->data = NULL;
 }
 
 void CList__insert_element(CList* self, CObject * record, int index){
     int i;
-    self->data = realloc (self->data,sizeof (record) + sizeof(self->data));
+    if(!self->data)
+        self->data = malloc(sizeof (record));
+    else
+        self->data = realloc (self->data,sizeof (record) + sizeof(self->data));
+
     for(i=self->count; i> index; i--){
         self->data[i] = self->data[i-1];
     }
@@ -35,7 +39,12 @@ void CList__remove_element(CList* self, int index){
     self->count--;
 
     //Resize array memory
-    self->data = realloc (self->data,sizeof(self->data)-shrink_size);
+    if(sizeof(self->data)-shrink_size == 0){
+        free(self->data);
+        self->data = NULL;
+    } else {
+        self->data = realloc (self->data,sizeof(self->data)-shrink_size);
+    }
 }
 
 void CList__clear(CList* self){
@@ -45,7 +54,8 @@ void CList__clear(CList* self){
             CObject__destroy(self->data[i]);
         }
         self->count = 0;
-        self->data = realloc(self->data,0);
+        free(self->data);
+        self->data = NULL;
     }
 }
 
@@ -64,4 +74,5 @@ void priv_CList__destroy(CObject * self){
     CList * list = (CList*)self;
     CList__clear(list);
     free(list->data);
+    list->data = NULL;
 }
