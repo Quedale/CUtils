@@ -1,13 +1,22 @@
 cmake_minimum_required(VERSION 3.18.1)
 project(cutils VERSION 0.0.1)
 
+option(ENABLE_SHARED "Build libraries as shared by default" OFF)
+
+if (ENABLE_SHARED)
+  set(LIB_BUILD_TYPE SHARED)
+else ()
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ".a;.dylib;.so;")
+  set(LIB_BUILD_TYPE STATIC)
+endif ()
+
 set(OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/release)
 set(LIBRARY_OUTPUT_PATH    ${OUTPUT_DIR})
 set(EXECUTABLE_OUTPUT_PATH ${OUTPUT_DIR})
 
 aux_source_directory(src src_dir)
 
-add_library(cutils STATIC    ${src_dir})
+add_library(cutils ${LIB_BUILD_TYPE}  ${src_dir})
 install(TARGETS cutils EXPORT cutils DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
